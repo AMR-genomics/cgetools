@@ -5,6 +5,7 @@ RUN apt-get update -qq && apt-get install -y -qq \
     build-essential \
     libz-dev \
     ncbi-blast+ \
+    curl \
     && rm -rf /var/cache/apt/* /var/lib/apt/lists/*
     
 # KMA
@@ -41,6 +42,19 @@ RUN mkdir -p /db \
 ENV CGE_RESFINDER_RESGENE_DB=/db/resfinder_db/
 ENV CGE_RESFINDER_RESPOINT_DB=/db/pointfinder_db/
 ENV CGE_DISINFINDER_DB=/db/disinfinder_db/
-RUN pip install -U biopython==1.73 tabulate cgecore \
-    && pip install --no-cache-dir resfinder
+RUN pip install -U biopython==1.73 tabulate \
+    && curl -sSL https://pdm-project.org/install-pdm.py | python3 - \
+    && git -C /usr/src/ clone --depth 1 https://bitbucket.org/genomicepidemiology/cgecore.git \
+    && cd /usr/src/cgecore && python3 setup.py install \
+    && git -C /usr/src/ clone --depth 1 https://bitbucket.org/genomicepidemiology/cgelib.git \
+    && cd /usr/src/cgelib && python3 setup.py install \
+    && git -C /usr/src/ clone --depth 1 https://bitbucket.org/genomicepidemiology/resfinder.git \
+    && cd /usr/src/resfinder && /root/.local/bin/pdm build && pip3 install dist/*.whl
+
+#RUN pip install -U biopython==1.73 tabulate cgecore \
+#    && pip install --no-cache-dir resfinder
+
+
+
+
 
